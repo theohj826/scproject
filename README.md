@@ -1,5 +1,5 @@
 # Final: Tank Attack
-# Dongwoo Kim Sungho Chong
+# Dongwoo Lee & Theodore Lee
 
 from random import *
 #This function calculates the cannonball's landing point     
