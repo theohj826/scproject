@@ -1,9 +1,10 @@
 # Final: Tank Attack
 # Dongwoo Lee & Theodore Lee
 
-from random import *
-#This function calculates the cannonball's landing point     
+#from random import *
 from math import sqrt, pi, radians, sin, cos
+
+#This function calculates the cannonball's landing point   
 def cball(angle_degree, vel , wind_vel):
     
     #set initial values
@@ -45,22 +46,27 @@ def cball(angle_degree, vel , wind_vel):
 def main():
     import sys
     import random
-    #randomly assign initial positions
-    t1_pos=randint(-1000,1000)
-    t2_pos=randint(-1000,1000)
-    #make sure that the tanks are not too close together
-    while t1_pos - t2_pos < 200 and t2_pos - t1_pos < 200:
-        t1_pos=randint(-1000,1000)
-        t2_pos=randint(-1000,1000)
-    #set initial random wind
-    wind_vel= randint(-50,50)
-    #game start message
+    
+    #Initial windvel
+    wind_vel= random.randint(-50,50)    
+    
+    #Initial Position
+    t1_pos=random.randint(-800,800)
+    t2_pos=random.randint(-800,800)
+    
+    #Minimum distance b/w tanks: 100
+    while t1_pos - t2_pos < 100 and t2_pos - t1_pos < 100:
+        t1_pos=random.randint(-800,800)
+        t2_pos=random.randint(-800,800)
+        
+    #Intro
     print("\nTank Attack\n\nOBEJCTIVE: DESTROY THE ENEMY TANK\n\nTank Width: 10\nLaunch Angle: 0-180 (degrees)\nLaunch Velocity: 1-1000 (mph)\nDistance Travel: 0-50\nEach turn you may choose to move or shoot\nMove:'m' Shoot:'s'\n")
     print("Type 'end' to quit playing\n\n")
+    
     #initial conditions    
-    n="NA"
+    n=0
     turn=1
-    while n=="NA":
+    while n==0:
         
         #Player 1's turn
         print ("Turn "+str(turn)+"\n\nTank 1")
@@ -90,13 +96,16 @@ def main():
                 print ("invalid launch velocity")
                 vel= eval(input("Launch Velocity: "))
             t1_shot = int(t1_pos+cball(angle_degree, vel, wind_vel))
-            print ("\n\nTank 1's cannonball landed at position "+str(t1_shot)+"\n\n\n")
-            if t1_shot-t2_pos<5 and t2_pos-t1_shot<5:
+            print ("\n\nTank 1's cannonball landed at position "+str(t1_shot)+"\n")
+            diff = abs(t1_shot-t2_pos)
+            if diff<5:
                 n="Tank 1"
                 break
+            else:
+                print("You missed by "+ str(diff))
         
         #Player 2's turn
-        print ("Tank 2\n")
+        print ("\n\nTank 2\n")
         print ("Tank 1 position: "+str(t1_pos)+"\nTank 2 position: "+str(t2_pos))
         print ("Wind: "+str(wind_vel)+" mph")
         move=input("Move or Shoot?\n")
@@ -105,6 +114,8 @@ def main():
         while move!="move" and move!="m" and move!="shoot" and move!="s":
             print("Invalid input")
             move=input("Move or Shoot? ('m'/'s')\n")
+            if move == "end":
+                sys.exit()
         if move=="move" or move=="m":
             moveby=eval(input("Move tank by: "))
             while moveby>50 or moveby<-50:
@@ -122,16 +133,20 @@ def main():
                 vel= eval(input("Launch Velocity: "))
             t2_shot = int(t2_pos+cball(angle_degree, vel, wind_vel))
             print ("\n\nTank 2's cannonball landed at position "+str(t2_shot)+"\n\n\n")
-            if t2_shot-t1_pos<5 and t1_pos-t2_shot<5:
+            diff = abs(t2_shot-t1_pos)
+            if diff<5:
                 n="Tank 2"
+                break
+            else:
+                print("You missed by "+ str(diff))
             
         #change things for the next turn
         turn=turn+1
-        wind_vel=wind_vel+randint(-2,2)
+        wind_vel=wind_vel+random.randint(-2,2)
         if wind_vel>50:
-            wind_vel=wind_vel-randint(3,4)
+            wind_vel=wind_vel-random.randint(3,4)
         if wind_vel<-50:
-            wind_vel=wind_vel+randint(3,4)
+            wind_vel=wind_vel+random.randint(3,4)
     print (n+" was victorious!")
     return
 
