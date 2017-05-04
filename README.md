@@ -1,33 +1,40 @@
 # Final: Tank Attack
-# Dongwoo Lee & Theodore Lee
+# Dongwoo Kim Sungho Chong
 
 from random import *
 #This function calculates the cannonball's landing point     
 from math import sqrt, pi, radians, sin, cos
 def cball(angle_degree, vel , wind_vel):
+    
     #set initial values
     xpos = 0.0
     ypos = 10.0
     t = 0.01
     df = 0.002
     m = 1.00
+    
     # convert angle to radians
     rad = radians(angle_degree)
+    
     # get x and y components of velocity
     xvel = vel *cos(rad)
     yvel = vel *sin(rad)
+    
     # simulate the launch
     while ypos >= 0:
-        #get acceleration and new velocity of x component
+        
+        #yvel2 calc
+        yvel_g = - t * 9.8
+        yvel_ar = - t * ( (df/m)*abs(((xvel**2)+(yvel**2))**(1/2))*yvel )
+        yvel2 = yvel +  yvel_g + yvel_ar   
+        
+        #xvel 2 calc
         xvel_air_res = - t * ( (df/m)*abs(sqrt((xvel**2)+(yvel**2)))*xvel )
         xvel_wind_load = t * (pi*0.0225)*0.00256*(wind_vel**2)
         if wind_vel < 0:
             xvel_wind_load = -xvel_wind_load
         xvel2 = xvel + xvel_air_res + xvel_wind_load
-        #Yvel2 calculation
-        yvel_g = - t * 9.8
-        yvel_ar = - t * ( (df/m)*abs(((xvel**2)+(yvel**2))**(1/2))*yvel )
-        yvel2 = yvel +  yvel_g + yvel_ar
+        
         #Updated Position
         xpos = xpos + t * (xvel + xvel2)/2.0
         ypos = ypos + t * (yvel + yvel2)/2.0
