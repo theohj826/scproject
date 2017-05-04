@@ -147,6 +147,8 @@ def main():
             wind_vel=wind_vel-random.randint(3,4)
         if wind_vel<-50:
             wind_vel=wind_vel+random.randint(3,4)
+        
+    print ("******************************HIT*HIT*HIT*HIT*HIT*HIT*HIT*HIT******************************")
     print (n+" was victorious!")
     return
 
