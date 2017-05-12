@@ -5,43 +5,59 @@
 from math import sqrt, pi, radians, sin, cos
 
 #This function calculates the cannonball's landing point   
-def cball(angle_degree, vel , wind_vel):
-    
-    #set initial values
-    xpos = 0.0
-    ypos = 10.0
-    t = 0.01
-    df = 0.002
-    m = 1.00
-    
-    # convert angle to radians
-    rad = radians(angle_degree)
-    
-    # get x and y components of velocity
-    xvel = vel *cos(rad)
-    yvel = vel *sin(rad)
-    
-    # simulate the launch
-    while ypos >= 0:
+class canball:
+    def __init__(self,xpos,angle_degree, vel , wind_vel):
+        self.t = 0.01
+        self.d = 0.0002
+        self.m = 1.00
+        self.wind = wind_vel
+        self.rad = radians(angle_degree)
         
-        #yvel2 calc
-        yvel_g = - t * 9.8
-        yvel_ar = - t * ( (df/m)*abs(((xvel**2)+(yvel**2))**(1/2))*yvel )
-        yvel2 = yvel +  yvel_g + yvel_ar   
+        self.xpos = xpos
+        self.ypos = 10.0
+        self.xvel = vel*cos(self.rad)
+        self.yvel = vel*sin(self.rad)
         
-        #xvel 2 calc
-        xvel_air_res = - t * ( (df/m)*abs(sqrt((xvel**2)+(yvel**2)))*xvel )
-        xvel_wind_load = t * (pi*0.0225)*0.00256*(wind_vel**2)
-        if wind_vel < 0:
-            xvel_wind_load = -xvel_wind_load
-        xvel2 = xvel + xvel_air_res + xvel_wind_load
+        self.x=[]
+        self.y=[]
         
-        #Updated Position
-        xpos = xpos + t * (xvel + xvel2)/2.0
-        ypos = ypos + t * (yvel + yvel2)/2.0
-        xvel = xvel2
-        yvel = yvel2
-    return (xpos)
+    def update(self,time):
+        v_mag=sqrt(self.yvel**2+self.xvel**2)
+        g_y = -9.8*time
+        ar_y = -(self.d/self.m)*v_mag*self.yvel*time
+        yvel2 = self.yvel + g_y + ar_y
+        
+        ar_x = -(self.d/self.m)*v_mag*self.xvel*time
+        wind_x = (pi*0.0225)*0.00256*(abs(self.wind)**2)*time #check this code
+        xvel2 = self.xvel + ar_x + wind_x
+        
+        self.xpos = self.xpos + time * (self.xvel + xvel2) / 2.0
+        self.ypos = self.ypos + time * (self.yvel + yvel2) / 2.0
+        self.yvel = yvel2
+        self.xvel = xvel2
+        self.x.append(self.xpos)
+        self.y.append(self.ypos)
+        
+    def get_y(self):
+        return (self.ypos)
+    
+    def get_x(self):
+        return (self.xpos)
+    
+class tank:
+    def __init__(self,pos):
+        self.pos = pos
+    
+    def move(self,dist):
+        self.pos = self.pos + dist
+
+    def getpos(self):
+        return(self.pos)
+    
+def calculate (cball):
+    while cball.get_y() >= 0:
+        cball.update(0.001)
+    return (cball.get_x())
 
 def main():
     import sys
@@ -55,22 +71,25 @@ def main():
     t2_pos=random.randint(-800,800)
     
     #Minimum distance b/w tanks: 100
-    while t1_pos - t2_pos < 100 and t2_pos - t1_pos < 100:
+    while abs(t1_pos - t2_pos) < 100:
         t1_pos=random.randint(-800,800)
         t2_pos=random.randint(-800,800)
-        
+    
+    tank1 = tank(float(t1_pos))
+    tank2 = tank(float(t2_pos))
+    
     #Intro
-    print("\nTank Attack\n\nOBEJCTIVE: DESTROY THE ENEMY TANK\n\nTank Width: 10\nLaunch Angle: 0-180 (degrees)\nLaunch Velocity: 1-1000 (mph)\nDistance Travel: 0-50\nEach turn you may choose to move or shoot\nMove:'m' Shoot:'s'\n")
-    print("Type 'end' to quit playing\n\n")
+    print("***********\nTank Attack\n\nOBEJCTIVE: DESTROY THE ENEMY TANK\n\nTank Width: 10\nLaunch Angle: 0-180 (degrees)\nLaunch Velocity: 1-1000 (mph)\nDistance Travel: 0-50\nEach turn you may choose to move or shoot\nMove:'m' Shoot:'s'\n")
+    print("Type 'end' to quit playing\n*********************\n")
     
     #initial conditions    
     n=0
-    turn=1
+    Round=1
     while n==0:
         
         #Player 1's turn
-        print ("Turn "+str(turn)+"\n\nTank 1")
-        print ("Tank 1 position: "+str(t1_pos)+"\nTank 2 position: "+str(t2_pos))
+        print ("Round "+str(Round)+"\n\n")
+        print ("****Tank 1 Turn****\n\nTank 1 position: "+str(tank1.getpos())+"\nTank 2 position: "+str(tank2.getpos()))
         print ("Wind: "+str(wind_vel)+" mph")
         move=input("Move or Shoot?\n")
         if move == "end":
@@ -80,12 +99,16 @@ def main():
             move=input("Move or Shoot? ('m'/'s')\n")
             if move == "end":
                 sys.exit()
+                
+        #player 1 move
         if move=="move" or move=="m":
-            moveby=eval(input("Move tank by: "))
-            while moveby>50 or moveby<-50:
+            dist=eval(input("Move tank by: "))
+            while abs(dist) > 50:
                 print ("Invalid move increment")
-                moveby=eval(input("Move tank by: "))
-            t1_pos=t1_pos+moveby
+                dist=eval(input("Move tank by: "))
+            tank1.move(dist)
+            
+        #player 1 shoot
         if move=="shoot" or move=="s":
             angle_degree= eval(input("Launch Angle: "))
             while angle_degree>180 or angle_degree<0:
@@ -95,9 +118,10 @@ def main():
             while vel>1000 or vel<1:
                 print ("invalid launch velocity")
                 vel= eval(input("Launch Velocity: "))
-            t1_shot = int(t1_pos+cball(angle_degree, vel, wind_vel))
+            cball = canball(tank1.getpos(),angle_degree, vel , wind_vel)
+            t1_shot = calculate(cball)
             print ("\n\nTank 1's cannonball landed at position "+str(t1_shot)+"\n")
-            diff = abs(t1_shot-t2_pos)
+            diff = abs(t1_shot-tank2.getpos())
             if diff<5:
                 n="Tank 1"
                 break
@@ -106,7 +130,8 @@ def main():
         
         #Player 2's turn
         print ("\n\nTank 2\n")
-        print ("Tank 1 position: "+str(t1_pos)+"\nTank 2 position: "+str(t2_pos))
+        print (tank1.pos)
+        print ("Tank 1 position: "+str(tank1.getpos())+"\nTank 2 position: "+str(tank2.getpos()))
         print ("Wind: "+str(wind_vel)+" mph")
         move=input("Move or Shoot?\n")
         if move == "end":
@@ -122,6 +147,8 @@ def main():
                 print ("Invalid move increment")
                 moveby=eval(input("Move tank by: "))
             t2_pos=t2_pos+moveby
+            
+        #player 2 shoot
         if move=="shoot" or move=="s":
             angle_degree= eval(input("Launch Angle: "))
             while angle_degree>180 or angle_degree<0:
@@ -141,7 +168,7 @@ def main():
                 print("You missed by "+ str(diff))
             
         #change things for the next turn
-        turn=turn+1
+        Round=Round+1
         wind_vel=wind_vel+random.randint(-2,2)
         if wind_vel>50:
             wind_vel=wind_vel-random.randint(3,4)
@@ -149,7 +176,7 @@ def main():
             wind_vel=wind_vel+random.randint(3,4)
         
     print ("******************************HIT*HIT*HIT*HIT*HIT*HIT*HIT*HIT******************************")
-    print (n+" was victorious!")
+    print (n+" won!")
     return
 
 main()
